@@ -5,7 +5,6 @@ import { useState } from "react";
 import { ordenes as ordenesIniciales } from "./data/datos.js";
 import BarraFiltros from "./components/BarraFiltros.jsx";
 
-
 import Panel from "./components/Panel.jsx";
 import ResumenOrdenes from "./components/ResumenOrdenes.jsx";
 import ListaOrdenes from "./components/ListaOrdenes.jsx";
