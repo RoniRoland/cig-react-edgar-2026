@@ -1,7 +1,7 @@
 // App es el unico archivo que sabe de donde salen los datos.
 // En la sesion 4 esta linea se cambia por una llamada a la API y
 // ningun otro componente se modifica.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ordenes as ordenesIniciales } from "./data/datos.js";
 import BarraFiltros from "./components/BarraFiltros.jsx";
 import FormularioOrden from "./components/FormularioOrden.jsx";
@@ -24,10 +24,31 @@ const COMPARADORES = {
 
 function App() {
 
-  const [ordenes, setOrdenes] = useState(ordenesIniciales);
+  const [ordenes, setOrdenes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [departamento, setDepartamento] = useState("");
   const [criterio, setCriterio] = useState("fecha");
+
+  // EFECTO: se ejecuta despues del render, no durante.
+  useEffect(() => {
+    let ignorar = false; // lo cambia la limpieza
+
+    // El efecto no puede ser async: la funcion async va adentro.
+    async function cargar() {
+      alert("Cargando!")
+      const respuesta = await fetch("http://localhost:3001/ordenes");
+      const datos = await respuesta.json();
+      if (!ignorar) setOrdenes(datos);
+    }
+    cargar();
+
+    // Limpieza: si el componente se desmonta antes de la respuesta,
+    // esa respuesta se descarta. StrictMode lo provoca en desarrollo.
+    return () => {
+      ignorar = true;
+    };
+  }, []); // [] = una sola vez, al montar
+
 
   // ALTA: arreglo nuevo con un elemento mas. Nunca push sobre el estado.
   // Forma funcional: recibe el arreglo mas reciente, no la foto del render.
