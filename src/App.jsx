@@ -11,6 +11,8 @@ import ResumenOrdenes from "./components/ResumenOrdenes.jsx";
 import ListaOrdenes from "./components/ListaOrdenes.jsx";
 import "./App.css";
 
+import { obtenerOrdenes } from "./services/ordenes.js";
+
 function normalizar(texto) {
   return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
@@ -29,16 +31,32 @@ function App() {
   const [departamento, setDepartamento] = useState("");
   const [criterio, setCriterio] = useState("fecha");
 
+  // Estados de la vista conectada a red.
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Cambiar intento repite el efecto porque esta en sus dependencias.
+  const [intento, setIntento] = useState(0);
+  const recargar = () => setIntento((n) => n + 1);
+
   // EFECTO: se ejecuta despues del render, no durante.
   useEffect(() => {
     let ignorar = false; // lo cambia la limpieza
 
     // El efecto no puede ser async: la funcion async va adentro.
     async function cargar() {
-      alert("Cargando!")
-      const respuesta = await fetch("http://localhost:3001/ordenes");
-      const datos = await respuesta.json();
-      if (!ignorar) setOrdenes(datos);
+      setCargando(true);
+      setError(null);
+      try {
+        const datos = await obtenerOrdenes();
+        if (!ignorar) setOrdenes(datos);
+      } catch (err) {
+        // Sin conexion o con un 404/500 convertido en error por el servicio.
+        if (!ignorar) setError(err.message);
+      } finally {
+        // Con exito o con error, la carga termina.
+        if (!ignorar) setCargando(false);
+      }
     }
     cargar();
 
@@ -47,7 +65,8 @@ function App() {
     return () => {
       ignorar = true;
     };
-  }, []); // [] = una sola vez, al montar
+  }, [intento]); // al montar y cada vez que se presiona Reintentar
+
 
 
   // ALTA: arreglo nuevo con un elemento mas. Nunca push sobre el estado.
@@ -108,11 +127,24 @@ function App() {
           onDepartamentoChange={setDepartamento}
           onCriterioChange={setCriterio}
         />
-        <ListaOrdenes
-          ordenes={ordenesVisibles}
-          onCompletar={completarOrden}
-          mensajeVacio="Ninguna orden coincide con los filtros."
-        />
+        {cargando ? (
+          <p className="mensaje mensaje--cargando">Cargando ordenes...</p>
+        ) : error ? (
+          <div className="mensaje mensaje--error">
+            <p>No se pudo cargar: {error}</p>
+            <p>Revise que la terminal de npm run api siga corriendo.</p>
+            <button className="boton" type="button" onClick={recargar}>
+              Reintentar
+            </button>
+          </div>
+        ) : (
+          <ListaOrdenes
+            ordenes={ordenesVisibles}
+            onCompletar={completarOrden}
+            mensajeVacio="Ninguna orden coincide con los filtros."
+          />
+        )}
+
       </Panel>
 
       <Panel titulo="Registrar orden">
