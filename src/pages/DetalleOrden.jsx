@@ -33,7 +33,7 @@ function DetalleOrden() {
 
     async function eliminar() {
         const confirmado = window.confirm(
-            `Eliminar ${orden.codigo}? No se puede deshacer.`
+            `Se encuentra completamente seguro de eliminar ${orden.codigo}? No se puede deshacer.`
         );
         if (!confirmado) return; // Cancelar: no sale ninguna peticion
 
