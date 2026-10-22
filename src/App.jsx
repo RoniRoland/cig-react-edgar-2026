@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import ListadoOrdenes from "./pages/ListadoOrdenes.jsx";
 import NuevaOrden from "./pages/NuevaOrden.jsx";
+import DetalleOrden from "./pages/DetalleOrden.jsx";
 
 import "./App.css";
 
@@ -16,6 +17,7 @@ function App() {
         <Route index element={<ListadoOrdenes />} />
         {/* Fija: gana a ordenes/:id aunque las dos coincidan con /ordenes/nueva */}
         <Route path="ordenes/nueva" element={<NuevaOrden />} />
+        <Route path="ordenes/:id" element={<DetalleOrden />} />
       </Route>
     </Routes>
   );
